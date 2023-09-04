@@ -1,17 +1,13 @@
-import { Cliente } from "./cliente"
-
-export class Bicicleta{
-    public modelo: string
-    public preco: number
-    public disponivel: boolean = true
-
-    constructor(modelo: boolean) {          //construtor de bicicleta cadastra o modelo "mounatain" ou "urban"
-        if(modelo == true){
-            this.modelo = 'urban'
-            this.preco = 10
-        } else {
-            this.modelo = 'mountain'
-            this.preco = 15
-        }                                   //preco definido por hora
-    }
+export class Bicicleta {
+    constructor(
+        public name: string,
+        public type: string,
+        public bodySize: number,
+        public maxLoad: number,
+        public rate: number,
+        public description: string,
+        public ratings: number,
+        public imageUrls: string[],
+        public id?: string
+    ) {}
 }

@@ -1,17 +1,28 @@
 import { Bicicleta } from "./bicicleta"
 import { Cliente } from "./cliente"
 
-export class Reserva{
-    constructor(
-        private tempo: number,
-        private bike: Bicicleta,
-        private pessoa: Cliente
-    ){
-        bike.disponivel = false                                         // quando a classe é chamada, ja faz a reserva da bike
-    }                                                                   //o construtor da reserva vai asociar o cliente com bicicleta
-    
-    public calculaPrecoReserva(preco: number): number{
-        preco = this.bike.preco * this.tempo
-        return preco
-    }                                                                   //preco definido pelas horas usadas
+export class Reserva {
+    private constructor(
+        public bike: Bicicleta,
+        public user: Cliente,
+        public dateFrom: Date,
+        public dateTo: Date,
+        public dateReturned?: Date
+    ) {}
+
+    static create(rents: Reserva[], bike: Bicicleta, user: Cliente, 
+                  startDate: Date, endDate: Date): Reserva {
+        const canCreate = Reserva.canRent(rents, startDate, endDate)
+        if (canCreate) return new Reserva(bike, user, startDate, endDate)
+        throw new Error('Overlapping dates.')
+    }
+
+    static canRent(rents: Reserva[], startDate: Date, endDate: Date): boolean {
+        for (const rent of rents) {
+            if (startDate <= rent.dateTo && endDate >= rent.dateFrom) {
+                return false
+            }
+        }
+        return true
+    }
 }
