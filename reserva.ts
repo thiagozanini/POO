@@ -2,6 +2,10 @@ import { Bicicleta } from "./bicicleta"
 import { Cliente } from "./cliente"
 
 export class Reserva {
+    end: any
+    start(end: any, start: any): number {
+        throw new Error("Method not implemented.")
+    }
     private constructor(
         public bike: Bicicleta,
         public user: Cliente,

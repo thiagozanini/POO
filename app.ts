@@ -1,12 +1,34 @@
 import { Bicicleta } from "./bicicleta";
 import { Cliente } from "./cliente";
 import { Reserva } from "./reserva";
+import { Crypt } from "./crypt";
 import crypto from 'crypto'
 
 export class App {
     users: Cliente[] = []
     bikes: Bicicleta[] = []
     rents: Reserva[] = []
+    crypt: Crypt = new Crypt();
+
+    findUserByID(email: string): Cliente {
+        return this.users.find((user) => user.email === email);
+      }
+
+      async registerUser(user: Cliente): Promise<void> {
+        for (const rUser of this.users) {
+          if (rUser.email === user.email) {
+            throw new Error("Duplicate user.");
+          }
+        }
+    
+        const setNewUSer: Cliente = {
+          ...user,
+          id: crypto.randomUUID(),
+          password: await this.crypt.encrypt(user.password),
+        };
+    
+        this.users.push(setNewUSer);
+      }
 
     findUser(email: string): Cliente {      // procura se ja tem usuario registrado
         return this.users.find(user => user.email === email)!
@@ -47,6 +69,7 @@ export class App {
         const novaReserva = Reserva.create(this.rents, bikeReserva, usuarioReserva, startDate, endDate) // tentar criar rent com o array e as informações da reserva
         this.rents.push(novaReserva)                            // adicionar a reserva ao array da reservas
     }
+
     returnBike(bikeId: string, userEmail: string) {
         const today = new Date()
         const rent = this.rents.find(rent => 
@@ -61,6 +84,21 @@ export class App {
         }
         throw new Error('Rent not found.')
     }  
+
+    async authenticate(userId: string, password: string) {
+        try {
+          const foundUser = this.findUserByID(userId);
+    
+          if (!foundUser) return undefined;
+    
+          return (await Cliente.authenticate(foundUser.password, password))
+            ? foundUser
+            : undefined;
+        } catch (err) {
+          throw new Error();
+        }
+      }
+
     listUser(): Cliente[]{
         if(this.users != null)
             return this.users
@@ -78,4 +116,10 @@ export class App {
             return this.bikes
         return []
     }//listagem de bikes
+
+    public diffHours(dt2: Date, dt1: Date): number {
+        let diff = (dt2.getTime() - dt1.getTime()) / 1000;
+        diff /= 60 * 60;
+        return Math.abs(diff);
+      }
 }
