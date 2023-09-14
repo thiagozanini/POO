@@ -10,40 +10,29 @@ export class App {
     rents: Reserva[] = []
     crypt: Crypt = new Crypt();
 
-    findUserByID(email: string): Cliente {
-        return this.users.find((user) => user.email === email);
-      }
-
-      async registerUser(user: Cliente): Promise<void> {
-        for (const rUser of this.users) {
-          if (rUser.email === user.email) {
-            throw new Error("Duplicate user.");
-          }
-        }
-    
-        const setNewUSer: Cliente = {
-          ...user,
-          id: crypto.randomUUID(),
-          password: await this.crypt.encrypt(user.password),
-        };
-    
-        this.users.push(setNewUSer);
-      }
-
-    findUser(email: string): Cliente {      // procura se ja tem usuario registrado
-        return this.users.find(user => user.email === email)!
-    }
-
-    registerUser(user: Cliente): string {     // registra usuario
+    async registerUser(user: Cliente): Promise<string> {
         for (const rUser of this.users) {
             if (rUser.email === user.email) {
                 throw new Error('Duplicate user.')
             }
         }
-        const newID = crypto.randomUUID()
-        user.id = newID
+
+        const newId = crypto.randomUUID()
+        user.id = newId
+        const encryptedPassword = await this.crypt.encrypt(user.password)
+        user.password = encryptedPassword
         this.users.push(user)
-        return newID
+        return newId
+    }
+    async authenticate(userEmail: string, password: string): Promise<boolean> {
+        const user = this.findUser(userEmail)
+        if (!user) throw new Error('User not found.')
+        return await this.crypt.compare(password, user.password)
+    }
+    
+
+    findUser(email: string): Cliente {      // procura se ja tem usuario registrado
+        return this.users.find(user => user.email === email)!
     }
 
     registerBike(bike: Bicicleta): string {
@@ -70,34 +59,20 @@ export class App {
         this.rents.push(novaReserva)                            // adicionar a reserva ao array da reservas
     }
 
-    returnBike(bikeId: string, userEmail: string) {
-        const today = new Date()
-        const rent = this.rents.find(rent => 
+    returnBike(bikeId: string, userEmail: string): number {
+        const now = new Date()
+        const rent = this.rents.find(rent =>
             rent.bike.id === bikeId &&
             rent.user.email === userEmail &&
-            rent.dateReturned === undefined &&
-            rent.dateFrom <= today
+            !rent.end
         )
-        if (rent) {
-            rent.dateReturned = today
-            return
-        }
-        throw new Error('Rent not found.')
+        if (!rent) throw new Error('Rent not found.')
+        rent.end = now
+        rent.bike.available = true
+        const hours = this.diffHours(rent.end, rent.dateTo)
+        return hours * rent.bike.rate
     }  
 
-    async authenticate(userId: string, password: string) {
-        try {
-          const foundUser = this.findUserByID(userId);
-    
-          if (!foundUser) return undefined;
-    
-          return (await Cliente.authenticate(foundUser.password, password))
-            ? foundUser
-            : undefined;
-        } catch (err) {
-          throw new Error();
-        }
-      }
 
     listUser(): Cliente[]{
         if(this.users != null)
@@ -122,4 +97,4 @@ export class App {
         diff /= 60 * 60;
         return Math.abs(diff);
       }
-}
+    }

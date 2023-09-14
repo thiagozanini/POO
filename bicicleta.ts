@@ -8,7 +8,7 @@ export class Bicicleta {
         public description: string,
         public ratings: number,
         public imageUrls: string[],
-        public id?: string,
-        public available: boolean = true
+        public available: boolean = true,
+        public id?: string
     ) {}
 }
