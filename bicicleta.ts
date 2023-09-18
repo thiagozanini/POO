@@ -1,4 +1,6 @@
 export class Bicicleta {
+    public lat: number | undefined
+    public long: number | undefined
     constructor(
         public name: string,
         public type: string,

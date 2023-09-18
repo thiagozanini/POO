@@ -98,3 +98,5 @@ export class App {
         return Math.abs(diff);
       }
     }
+//ultilizar alguma bibiloteca especiica para isso (angular)
+//referenciar por longitude e latitude
